@@ -1,0 +1,47 @@
+name: Test Workflow
+
+on:
+  workflow_dispatch:
+    inputs:
+      test_input:
+        description: 'Test input parameter'
+        required: false
+        default: 'Hello World'
+  push:
+    branches: [ main ]
+
+jobs:
+  test-job:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Echo test
+        run: echo "Running test workflow"
+        
+      - name: Echo input
+        run: echo "Input: ${{ github.event.inputs.test_input || 'triggered by push' }}"
+        
+      - name: Create test artifact
+        run: |
+          mkdir -p test-results
+          echo "Test artifact content" > test-results/result.txt
+          
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-results
+          path: test-results/
+          
+  sometimes-fails:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Random failure test
+        run: |
+          if [ $((RANDOM % 2)) -eq 0 ]; then
+            echo "Success!"
+            exit 0
+          else
+            echo "Intentional failure for testing"
+            exit 1
+          fi
